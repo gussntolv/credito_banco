@@ -7,6 +7,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import classification_report
 from sklearn.linear_model import LogisticRegression
 from sklearn.dummy import DummyClassifier
+import numpy as np
 
 # Configuração da página
 st.set_page_config(
@@ -112,11 +113,156 @@ with st.container():
     
     st.markdown("---")
     
-    # GRÁFICOS
+    # ===== NOVA SEÇÃO: TESTE INTERATIVO DO ROBÔ =====
+    st.subheader("🧪 Teste Interativo do Robô")
+    st.markdown("Informe os dados do cliente para simular se o empréstimo seria aprovado:")
+    
+    # Criar colunas para os inputs
+    col1, col2, col3 = st.columns(3)
+    
+    with col1:
+        st.markdown("**📋 Dados Pessoais**")
+        idade_teste = st.number_input("Idade (anos)", min_value=18, max_value=100, value=35, step=1)
+        dependentes_teste = st.number_input("Número de Dependentes", min_value=0, max_value=10, value=1, step=1)
+        tempo_emprego_teste = st.number_input("Tempo de Emprego (anos)", min_value=0.0, max_value=50.0, value=5.0, step=0.5)
+    
+    with col2:
+        st.markdown("**💰 Dados Financeiros**")
+        renda_teste = st.number_input("Renda Mensal (R$)", min_value=0.0, max_value=100000.0, value=5000.0, step=500.0)
+        divida_teste = st.number_input("Dívida Atual (R$)", min_value=0.0, max_value=100000.0, value=2000.0, step=500.0)
+    
+    with col3:
+        st.markdown("**📊 Score de Crédito**")
+        score_teste = st.slider("Score de Crédito", min_value=300, max_value=850, value=650, step=10)
+        st.markdown("---")
+        st.markdown("**Níveis de Score:**")
+        st.markdown("- Ruim: 300-500")
+        st.markdown("- Regular: 501-600")
+        st.markdown("- Bom: 601-700")
+        st.markdown("- Ótimo: 701-850")
+    
+    # Botão para fazer a previsão
+    st.markdown("---")
+    col1, col2, col3 = st.columns([1,2,1])
+    
+    with col2:
+        testar = st.button("🔮 SIMULAR APROVAÇÃO", use_container_width=True, type="primary")
+    
+    if testar:
+        # Preparar os dados do cliente para previsão
+        cliente_teste = pd.DataFrame([[idade_teste, renda_teste, divida_teste, score_teste, tempo_emprego_teste, dependentes_teste]],
+                                    columns=['idade','renda_mensal','divida_atual','score_credito','tempo_emprego','dependentes'])
+        
+        # Fazer previsão
+        probabilidade = robo.predict_proba(cliente_teste)[0]
+        previsao_teste = robo.predict(cliente_teste)[0]
+        
+        # Mostrar resultado
+        st.markdown("---")
+        st.markdown("### 📊 Resultado da Simulação")
+        
+        # Cards com resultados
+        res_col1, res_col2, res_col3 = st.columns(3)
+        
+        with res_col2:
+            if previsao_teste == 1:
+                st.success("### ✅ EMPRÉSTIMO APROVADO!")
+                st.balloons()
+            else:
+                st.error("### ❌ EMPRÉSTIMO NEGADO!")
+                st.snow()
+        
+        with res_col1:
+            st.metric("🎯 Probabilidade de Aprovação", f"{probabilidade[1]:.1%}")
+        
+        with res_col3:
+            st.metric("⚠️ Probabilidade de Negação", f"{probabilidade[0]:.1%}")
+        
+        # Barra de probabilidade visual
+        st.markdown("**📊 Nível de Confiança do Robô:**")
+        prob_percent = probabilidade[1] * 100
+        st.progress(int(prob_percent), text=f"{prob_percent:.0f}% chance de aprovação")
+        
+        # Mostrar dados do cliente
+        st.markdown("---")
+        st.markdown("**📋 Dados do Cliente Analisado:**")
+        
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            dados_cliente = pd.DataFrame({
+                'Variável': ['Idade', 'Renda Mensal', 'Dívida Atual'],
+                'Valor': [f"{idade_teste} anos", f"R$ {renda_teste:,.2f}", f"R$ {divida_teste:,.2f}"]
+            })
+            st.dataframe(dados_cliente, use_container_width=True, hide_index=True)
+        
+        with col2:
+            dados_cliente2 = pd.DataFrame({
+                'Variável': ['Score', 'Tempo Emprego', 'Dependentes'],
+                'Valor': [f"{score_teste} pontos", f"{tempo_emprego_teste} anos", f"{dependentes_teste}"]
+            })
+            st.dataframe(dados_cliente2, use_container_width=True, hide_index=True)
+        
+        # Fatores que influenciaram a decisão
+        st.markdown("---")
+        st.markdown("**🔍 Fatores que influenciaram esta decisão:**")
+        
+        # Comparar com médias
+        media_aprovados = df[df['aprovado'] == 1].mean()
+        media_reprovados = df[df['aprovado'] == 0].mean()
+        
+        fatores = []
+        
+        # Verificar cada fator
+        if renda_teste > media_aprovados['renda_mensal']:
+            fatores.append("✅ **Renda acima da média** de aprovados (+ positivo)")
+        elif renda_teste < media_reprovados['renda_mensal']:
+            fatores.append("⚠️ **Renda abaixo da média** de aprovados (- negativo)")
+        else:
+            fatores.append("📊 **Renda na média** dos aprovados")
+        
+        if score_teste > media_aprovados['score_credito']:
+            fatores.append("✅ **Score acima da média** de aprovados (+ positivo)")
+        elif score_teste < media_reprovados['score_credito']:
+            fatores.append("⚠️ **Score abaixo da média** de aprovados (- negativo)")
+        else:
+            fatores.append("📊 **Score na média** dos aprovados")
+        
+        if tempo_emprego_teste > media_aprovados['tempo_emprego']:
+            fatores.append("✅ **Tempo de emprego acima** da média (+ positivo)")
+        else:
+            fatores.append("⚠️ **Tempo de emprego curto** pode impactar (- negativo)")
+        
+        if dependentes_teste > media_aprovados['dependentes']:
+            fatores.append("⚠️ **Número de dependentes acima** da média (- negativo)")
+        else:
+            fatores.append("✅ **Número de dependentes controlado** (+ positivo)")
+        
+        for fator in fatores:
+            st.write(fator)
+        
+        # Recomendação
+        st.markdown("---")
+        if previsao_teste == 0:
+            st.warning("💡 **Recomendação:** Para aumentar as chances de aprovação, considere:")
+            st.markdown("""
+            - Aumentar o score de crédito (pagar contas em dia)
+            - Reduzir dívidas existentes
+            - Aumentar o tempo no emprego atual
+            - Ter uma renda mais estável
+            """)
+        else:
+            st.info("🎉 **Parabéns!** O cliente tem um bom perfil para aprovação de crédito.")
+    
+    st.markdown("---")
+    
+    # GRÁFICOS COM ESPAÇO PARA EXPLICAÇÕES
     st.subheader("📈 Visualizações Gráficas")
     
     # Gráfico 1
-    st.markdown("#### Idade vs Renda Mensal (colorido por aprovação)")
+    st.markdown("#### 📊 Gráfico 1: Idade vs Renda Mensal")
+    
+    # Seu gráfico original
     fig1, ax1 = plt.subplots(figsize=(10,6))
     sns.scatterplot(x='idade', y='renda_mensal', hue='aprovado', data=df, 
                     palette=['red', 'green'], alpha=0.6, s=100, ax=ax1)
@@ -127,8 +273,26 @@ with st.container():
     ax1.grid(True, alpha=0.3)
     st.pyplot(fig1)
     
+    # Espaço para explicação do gráfico 1 - EDITE AQUI!
+    with st.expander("📝 Clique aqui para explicar este gráfico", expanded=True):
+        st.markdown("""
+        **🔍 Análise do Gráfico 1:**
+        
+        Cole aqui sua explicação para este gráfico!
+        
+        Exemplo:
+        - **O que mostra?** Este gráfico relaciona idade e renda mensal dos clientes.
+        - **O que observamos?** Clientes aprovados (verde) tendem a ter maior renda, independente da idade.
+        - **Pontos importantes:** Existe um cluster de clientes com renda acima de R$ 10.000 que foram todos aprovados.
+        - **Insights:** A renda parece ser um fator mais determinante que a idade para aprovação.
+        """)
+    
+    st.markdown("---")
+    
     # Gráfico 2
-    st.markdown("#### Score x Renda Mensal (Colorido por Aprovação)")
+    st.markdown("#### 📊 Gráfico 2: Score vs Renda Mensal")
+    
+    # Seu gráfico original
     fig2, ax2 = plt.subplots(figsize=(10,6))
     sns.scatterplot(x='score_credito', y='renda_mensal', hue='aprovado', data=df, 
                     palette=['red', 'green'], alpha=0.6, s=100, ax=ax2)
@@ -139,8 +303,26 @@ with st.container():
     ax2.grid(True, alpha=0.3)
     st.pyplot(fig2)
     
+    # Espaço para explicação do gráfico 2 - EDITE AQUI!
+    with st.expander("📝 Clique aqui para explicar este gráfico", expanded=True):
+        st.markdown("""
+        **🔍 Análise do Gráfico 2:**
+        
+        Cole aqui sua explicação para este gráfico!
+        
+        Exemplo:
+        - **O que mostra?** Relação entre score de crédito e renda mensal.
+        - **O que observamos?** Clientes com score acima de 600 e renda acima de R$ 5.000 têm alta taxa de aprovação.
+        - **Padrões identificados:** Quanto maior o score, maior a chance de aprovação, especialmente quando combinado com boa renda.
+        - **Conclusão:** Score de crédito é um forte preditor de aprovação.
+        """)
+    
+    st.markdown("---")
+    
     # Gráfico 3
-    st.markdown("#### Idade x Score: Existe relação com aprovação?")
+    st.markdown("#### 📊 Gráfico 3: Idade vs Score de Crédito")
+    
+    # Seu gráfico original
     fig3, ax3 = plt.subplots(figsize=(10,6))
     sns.scatterplot(x='idade', y='score_credito', hue='aprovado', data=df, 
                     palette=['red','green'], alpha=0.6, s=100, ax=ax3)
@@ -150,6 +332,43 @@ with st.container():
     ax3.legend(title='Aprovado', labels=['Não','Sim'])
     ax3.grid(True, alpha=0.6)
     st.pyplot(fig3)
+    
+    # Espaço para explicação do gráfico 3 - EDITE AQUI!
+    with st.expander("📝 Clique aqui para explicar este gráfico", expanded=True):
+        st.markdown("""
+        **🔍 Análise do Gráfico 3:**
+        
+        Cole aqui sua explicação para este gráfico!
+        
+        Exemplo:
+        - **O que mostra?** Relação entre idade e score de crédito.
+        - **O que observamos?** Score de crédito tende a aumentar com a idade até aproximadamente 50 anos.
+        - **Pontos de atenção:** Clientes jovens com score baixo têm maior chance de negativa.
+        - **Recomendação:** Políticas diferenciadas para diferentes faixas etárias podem ser benéficas.
+        """)
+    
+    # Resumo final dos gráficos
+    st.markdown("---")
+    st.markdown("### 📋 Resumo das Análises Gráficas")
+    
+    # Espaço para resumo geral - EDITE AQUI!
+    with st.expander("📝 Resumo geral e conclusões", expanded=True):
+        st.markdown("""
+        **🎯 Principais Insights dos Gráficos:**
+        
+        Cole aqui seu resumo final com os principais aprendizados dos gráficos!
+        
+        Exemplo:
+        1. **Renda é o fator mais determinante** - Clientes com maior renda têm muito mais chances de aprovação.
+        2. **Score de crédito importa** - Acima de 700 pontos, a taxa de aprovação é significativamente maior.
+        3. **Idade tem correlação positiva** - Até os 50 anos, idade avançada traz mais aprovações.
+        4. **Combinação de fatores** - O modelo se torna mais preciso quando consideramos todas variáveis juntas.
+        
+        **💡 Recomendações para o negócio:**
+        - Priorizar clientes com score > 600 e renda > R$ 5.000
+        - Considerar políticas especiais para jovens profissionais
+        - Revisar critérios para clientes com muitas dependências financeiras
+        """)
 
 # Rodapé
 st.markdown("---")
