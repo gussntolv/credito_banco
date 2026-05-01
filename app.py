@@ -113,7 +113,7 @@ with st.container():
     
     st.markdown("---")
     
-    # ===== NOVA SEÇÃO: TESTE INTERATIVO DO ROBÔ =====
+    # ===== SEÇÃO: TESTE INTERATIVO DO ROBÔ =====
     st.subheader("🧪 Teste Interativo do Robô")
     st.markdown("Informe os dados do cliente para simular se o empréstimo seria aprovado:")
     
@@ -256,24 +256,29 @@ with st.container():
     
     st.markdown("---")
     
-    # GRÁFICOS COM ESPAÇO PARA EXPLICAÇÕES
+    # GRÁFICOS COM TAMANHO REDUZIDO
     st.subheader("📈 Visualizações Gráficas")
     
-    # Gráfico 1
+    # Configurar estilo padrão para gráficos menores
+    plt.rcParams['figure.figsize'] = [8, 5]  # Tamanho reduzido padrão
+    plt.rcParams['figure.dpi'] = 80  # Resolução um pouco menor para compactar
+    
+    # GRÁFICO 1 - Reduzido
     st.markdown("#### 📊 Gráfico 1: Idade vs Renda Mensal")
     
-    # Seu gráfico original
-    fig1, ax1 = plt.subplots(figsize=(10,6))
+    # Seu gráfico original com tamanho reduzido
+    fig1, ax1 = plt.subplots(figsize=(8, 5))  # Tamanho reduzido
     sns.scatterplot(x='idade', y='renda_mensal', hue='aprovado', data=df, 
-                    palette=['red', 'green'], alpha=0.6, s=100, ax=ax1)
-    ax1.set_title('Idade vs Renda Mensal (colorido por aprovação)', fontsize=14)
-    ax1.set_xlabel('Idade (anos)')
-    ax1.set_ylabel('Renda Mensal (R$)')
-    ax1.legend(title='Aprovado', labels=['Não', 'Sim'])
+                    palette=['red', 'green'], alpha=0.6, s=60, ax=ax1)  # s=60 (pontos menores)
+    ax1.set_title('Idade vs Renda Mensal (colorido por aprovação)', fontsize=12)
+    ax1.set_xlabel('Idade (anos)', fontsize=10)
+    ax1.set_ylabel('Renda Mensal (R$)', fontsize=10)
+    ax1.legend(title='Aprovado', labels=['Não', 'Sim'], fontsize=9)
     ax1.grid(True, alpha=0.3)
+    plt.tight_layout()  # Ajusta automaticamente o layout
     st.pyplot(fig1)
     
-    # Espaço para explicação do gráfico 1 - EDITE AQUI!
+    # Espaço para explicação do gráfico 1
     with st.expander("📝 Clique aqui para explicar este gráfico", expanded=True):
         st.markdown("""
         **🔍 Análise do Gráfico 1:**
@@ -281,93 +286,71 @@ with st.container():
         Cole aqui sua explicação para este gráfico!
         
         Exemplo:
-        - **O que mostra?** Este gráfico relaciona idade e renda mensal dos clientes.
-        - **O que observamos?** Clientes aprovados (verde) tendem a ter maior renda, independente da idade.
-        - **Pontos importantes:** Existe um cluster de clientes com renda acima de R$ 10.000 que foram todos aprovados.
-        - **Insights:** A renda parece ser um fator mais determinante que a idade para aprovação.
+        - **O que mostra?** Relação entre idade e renda mensal
+        - **O que observamos?** Aprovados têm maior renda
+        - **Insights:** Renda é fator determinante
         """)
     
     st.markdown("---")
     
-    # Gráfico 2
+    # GRÁFICO 2 - Reduzido
     st.markdown("#### 📊 Gráfico 2: Score vs Renda Mensal")
     
-    # Seu gráfico original
-    fig2, ax2 = plt.subplots(figsize=(10,6))
+    fig2, ax2 = plt.subplots(figsize=(8, 5))  # Tamanho reduzido
     sns.scatterplot(x='score_credito', y='renda_mensal', hue='aprovado', data=df, 
-                    palette=['red', 'green'], alpha=0.6, s=100, ax=ax2)
-    ax2.set_title("Score x Renda Mensal (Colorido por Aprovação)")
-    ax2.set_xlabel('Score')
-    ax2.set_ylabel('Renda Mensal (em R$)')
-    ax2.legend(title='Aprovado', labels=['Não','Sim'])
+                    palette=['red', 'green'], alpha=0.6, s=60, ax=ax2)  # s=60 (pontos menores)
+    ax2.set_title("Score x Renda Mensal (Colorido por Aprovação)", fontsize=12)
+    ax2.set_xlabel('Score', fontsize=10)
+    ax2.set_ylabel('Renda Mensal (em R$)', fontsize=10)
+    ax2.legend(title='Aprovado', labels=['Não','Sim'], fontsize=9)
     ax2.grid(True, alpha=0.3)
+    plt.tight_layout()
     st.pyplot(fig2)
     
-    # Espaço para explicação do gráfico 2 - EDITE AQUI!
     with st.expander("📝 Clique aqui para explicar este gráfico", expanded=True):
         st.markdown("""
         **🔍 Análise do Gráfico 2:**
         
         Cole aqui sua explicação para este gráfico!
-        
-        Exemplo:
-        - **O que mostra?** Relação entre score de crédito e renda mensal.
-        - **O que observamos?** Clientes com score acima de 600 e renda acima de R$ 5.000 têm alta taxa de aprovação.
-        - **Padrões identificados:** Quanto maior o score, maior a chance de aprovação, especialmente quando combinado com boa renda.
-        - **Conclusão:** Score de crédito é um forte preditor de aprovação.
         """)
     
     st.markdown("---")
     
-    # Gráfico 3
+    # GRÁFICO 3 - Reduzido
     st.markdown("#### 📊 Gráfico 3: Idade vs Score de Crédito")
     
-    # Seu gráfico original
-    fig3, ax3 = plt.subplots(figsize=(10,6))
+    fig3, ax3 = plt.subplots(figsize=(8, 5))  # Tamanho reduzido
     sns.scatterplot(x='idade', y='score_credito', hue='aprovado', data=df, 
-                    palette=['red','green'], alpha=0.6, s=100, ax=ax3)
-    ax3.set_title('Idade x Score: Existe relação com aprovação?')
-    ax3.set_xlabel("Idade")
-    ax3.set_ylabel("Score de Crédito")
-    ax3.legend(title='Aprovado', labels=['Não','Sim'])
+                    palette=['red','green'], alpha=0.6, s=60, ax=ax3)  # s=60 (pontos menores)
+    ax3.set_title('Idade x Score: Existe relação com aprovação?', fontsize=12)
+    ax3.set_xlabel("Idade", fontsize=10)
+    ax3.set_ylabel("Score de Crédito", fontsize=10)
+    ax3.legend(title='Aprovado', labels=['Não','Sim'], fontsize=9)
     ax3.grid(True, alpha=0.6)
+    plt.tight_layout()
     st.pyplot(fig3)
     
-    # Espaço para explicação do gráfico 3 - EDITE AQUI!
     with st.expander("📝 Clique aqui para explicar este gráfico", expanded=True):
         st.markdown("""
         **🔍 Análise do Gráfico 3:**
         
         Cole aqui sua explicação para este gráfico!
-        
-        Exemplo:
-        - **O que mostra?** Relação entre idade e score de crédito.
-        - **O que observamos?** Score de crédito tende a aumentar com a idade até aproximadamente 50 anos.
-        - **Pontos de atenção:** Clientes jovens com score baixo têm maior chance de negativa.
-        - **Recomendação:** Políticas diferenciadas para diferentes faixas etárias podem ser benéficas.
         """)
     
     # Resumo final dos gráficos
     st.markdown("---")
     st.markdown("### 📋 Resumo das Análises Gráficas")
     
-    # Espaço para resumo geral - EDITE AQUI!
     with st.expander("📝 Resumo geral e conclusões", expanded=True):
         st.markdown("""
         **🎯 Principais Insights dos Gráficos:**
         
-        Cole aqui seu resumo final com os principais aprendizados dos gráficos!
-        
-        Exemplo:
-        1. **Renda é o fator mais determinante** - Clientes com maior renda têm muito mais chances de aprovação.
-        2. **Score de crédito importa** - Acima de 700 pontos, a taxa de aprovação é significativamente maior.
-        3. **Idade tem correlação positiva** - Até os 50 anos, idade avançada traz mais aprovações.
-        4. **Combinação de fatores** - O modelo se torna mais preciso quando consideramos todas variáveis juntas.
+        Cole aqui seu resumo final com os principais aprendizados!
         
         **💡 Recomendações para o negócio:**
-        - Priorizar clientes com score > 600 e renda > R$ 5.000
-        - Considerar políticas especiais para jovens profissionais
-        - Revisar critérios para clientes com muitas dependências financeiras
+        - Priorizar clientes com perfil adequado
+        - Revisar critérios de aprovação
+        - Otimizar política de crédito
         """)
 
 # Rodapé
